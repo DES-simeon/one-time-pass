@@ -8,5 +8,5 @@ MeteorOTP.checkOTPExpiration = function (user) {
   } catch (e) {
     console.log("No Application config for OTP expiration delay, using default: 10 minutes");
   }
-  return moment(user.onePassCode.lastCheckDate).add(delay, 'm').isBefore(moment());
+  return moment(user.OTP.lastCheckDate).add(delay, 'm').isBefore(moment());
 }

@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "speakeasy": {
+      "version": "2.0.0",
+      "dependencies": {
+        "base32.js": {
+          "version": "0.0.1"
+        }
+      }
+    }
+  }
+}
