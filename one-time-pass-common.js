@@ -2,7 +2,7 @@ if (typeof MeteorOTP === "undefined")
   MeteorOTP = {};
 
 MeteorOTP.checkOTPExpiration = function (user) {
-  var delay = 10; // minutes
+  var delay = 2; // minutes
   try {
     delay = Meteor.settings.public.OTP.expiration;
   } catch (e) {
