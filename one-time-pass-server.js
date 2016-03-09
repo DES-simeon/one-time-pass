@@ -16,48 +16,52 @@ Meteor.methods({
   initOTP: function () {
     if (!this.userId)
       throw new Meteor.Error(403, "Can only be called by a connected user.");
+    TOTP.remove({'uuid': this.userId});
     var key = speakeasy.generateSecret( {length : 32} );
     var key32 = key.base32
-    var token = speakeasy.totp({
-		  secret: key32,
-		  encoding: 'base32'
-		});
-		
+    var token_val = speakeasy.totp({
+      secret: key32,
+      encoding: 'base32'
+    });
     var otpURL = "otpauth://totp/branche.des.com:" + Meteor.user().profile.phone + "?secret=" + key.base32 + "&issuer=branche.des.com";
-    Meteor.users.update(this.userId, {$set: {'OTPTmp': {key: key, token: token, lastUsedCodes: [], activated: true}, 'OTPUrl': otpURL }});
-    return token;
+    
+    console.log("Generated TOTP");
+    console.log(token_val);
+
+    TOTP.insert({
+      uuid: Meteor.userId(),
+      secret: key32,
+      val: token_val,
+      encoding: 'base32',
+      url: otpURL,
+      lastCheckDate: new Date()
+    });
+    console.log("Done with TOTP");
+
+    return token_val;
   },
-  activeOTP: function () {
-    if (!this.userId)
-      throw new Meteor.Error(403, "Can only be called by a connected user.");
-    var currentUser = Meteor.users.findOne(this.userId, {fields: {'OTPurlTmp': 1}});
-    currentUser.onePassCodeTmp.lastCheckDate = moment().toDate();
-    Meteor.users.update(this.userId, {$set: {'OTP': currentUser.tokenTmp}, $unset: {'OTPTmp': ""}});
-  },
-  cancelInitOTP: function () {
-    Meteor.users.update(this.userId, {$unset: {'OTPTmp': ""}});
+  cancelOTP: function () {
+    TOTP.remove({'uuid': this.userId});
   },
   checkOTP: function (code, tmp) {
     if (!this.userId) {
       return new Meteor.Error(403, "Can only be called by a connected user.");
     }
-    var profileOTP = null;
-    if (tmp) {
-      profileOTP = Meteor.users.findOne(this.userId, {fields: {'OTPTmp': 1}}).OTPTmp;
-    }
-    else {
-      profileOTP = Meteor.users.findOne(this.userId, {fields: {'OTP': 1}}).OTP;
-    }
+    console.log("Confirming TOTP");
+    var profileOTP = TOTP.findOne({'uuid': this.userId});
+    console.log(profileOTP);
+    
     var tokenDelta = speakeasy.totp.verify({
-		  secret: profileOTP.key.base32,
-		  encoding: 'base32',
-		  token: code,
-		  window: 2
-		});
+      secret: profileOTP.secret,
+      encoding: 'base32',
+      token: code,
+      window: 4
+    });
+    console.log(tokenDelta);
     // If user has just validate an OTP, set the last check date to now!
-    if (tokenDelta && !tmp) {
-      Meteor.users.update(this.userId, {$set: {'OTP.lastCheckDate': new Date()}});
-    }
+    if (tokenDelta) {
+      TOTP.remove({'uuid': this.userId});
+    } 
     return tokenDelta;
   }
 });

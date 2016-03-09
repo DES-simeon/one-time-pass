@@ -11,12 +11,16 @@ Package.describe({
 });
 
 Package.onUse(function(api) {
+  api.use('mongo');
+  api.use('aldeed:simple-schema');
+  api.use('reywood:publish-composite');
+
   api.versionsFrom('METEOR@0.9.2.2');
-  api.addFiles('one-time-pass-common.js');
-  api.addFiles('one-time-pass-client.js', 'client');
   api.addFiles('one-time-pass-server.js', 'server');
+  api.addFiles('one-time-pass-collections.js', 'server');
   // api.use('jeeeyul:moment-with-langs@2.8.2');
   api.export('MeteorOTP');
+  api.export('TOTP',['server','client']);
 });
 
 Package.onTest(function(api) {
