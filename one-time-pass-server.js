@@ -16,6 +16,7 @@ Meteor.methods({
   initOTP: function () {
     if (!this.userId)
       throw new Meteor.Error(403, "Can only be called by a connected user.");
+    
     TOTP.remove({'uuid': this.userId});
     var key = speakeasy.generateSecret( {length : 32} );
     var key32 = key.base32
@@ -23,7 +24,7 @@ Meteor.methods({
       secret: key32,
       encoding: 'base32'
     });
-    var otpURL = "otpauth://totp/branche.des.com:" + Meteor.user().profile.phone + "?secret=" + key.base32 + "&issuer=branche.des.com";
+    // var otpURL = "otpauth://totp/branche.des.com:" + Meteor.user().profile.phone + "?secret=" + key.base32 + "&issuer=branche.des.com";
     
     console.log("Generated TOTP");
     console.log(token_val);
@@ -33,7 +34,6 @@ Meteor.methods({
       secret: key32,
       val: token_val,
       encoding: 'base32',
-      url: otpURL,
       lastCheckDate: new Date()
     });
     console.log("Done with TOTP");

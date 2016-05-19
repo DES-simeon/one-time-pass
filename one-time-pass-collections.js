@@ -15,7 +15,8 @@ TOTP.attachSchema(new SimpleSchema({
     type: String
   },
   'url': {
-    type: String
+    type: String,
+    optional: true
   },
   'lastCheckDate': {
     type: Date
